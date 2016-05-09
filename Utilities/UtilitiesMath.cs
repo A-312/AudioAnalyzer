@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UObject = UnityEngine.Object;
 
-public static partial class Utilities
-{
+public static partial class Utilities {
 	/// <summary>
 	/// Map a number from one range (between inMin and inMax) to another (between outMin and outMax)
 	/// </summary>
@@ -15,16 +14,12 @@ public static partial class Utilities
 	/// <param name="outMin"></param>
 	/// <param name="outMax"></param>
 	/// <returns>the value mapped to the new range</returns>
-	public static float Map(this float value, float inMin, float inMax, float outMin, float outMax)
-	{
+	public static float Map(this float value, float inMin, float inMax, float outMin, float outMax) {
 		// Check for division by zero
-		if (Mathf.Abs(inMin - inMax) < float.Epsilon)
-		{
+		if (Mathf.Abs(inMin - inMax) < float.Epsilon) {
 			Debug.LogWarning("Map: avoiding possible divide by zero, check inMin and InMax: " + inMin.ToString() + " " + inMax.ToString());
 			return outMin;
-		}
-		else
-		{
+		} else {
 			return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
 		}
 	}
@@ -40,16 +35,12 @@ public static partial class Utilities
 	/// <param name="outMin"></param>
 	/// <param name="outMax"></param>
 	/// <returns>the value mapped to the new range with clamping</returns>
-	public static float MapClamp(this float value, float inMin, float inMax, float outMin, float outMax)
-	{
+	public static float MapClamp(this float value, float inMin, float inMax, float outMin, float outMax) {
 		// Check for division by zero
-		if (Mathf.Abs(inMin - inMax) < float.Epsilon)
-		{
+		if (Mathf.Abs(inMin - inMax) < float.Epsilon) {
 			Debug.LogWarning("Map: avoiding possible divide by zero, check inMin and InMax: " + inMin.ToString() + " " + inMax.ToString());
 			return outMin;
-		}
-		else
-		{
+		} else {
 			return Mathf.Clamp((value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin, outMin, outMax);
 		}
 	}

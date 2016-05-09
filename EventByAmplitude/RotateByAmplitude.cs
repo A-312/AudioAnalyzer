@@ -1,9 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
-public class RotateByAmplitude : MonoBehaviour 
-{
-	
+public class RotateByAmplitude : MonoBehaviour {
+
 	#region vars
 	[SerializeField]
 	protected Vector3 axis;
@@ -13,29 +12,24 @@ public class RotateByAmplitude : MonoBehaviour
 	protected bool useThreshold;
 
 	[SerializeField]
-	[Range(0,3)]
+	[Range(0, 3)]
 	protected int listenBand;
-		
-	
+
+
 	protected Transform trans;
 	protected float val;
 	#endregion
-	
+
 	#region Unity methods
-	void Start () 
-	{	
+	void Start() {
 		trans = transform;
 	}
-	
-	void Update () 
-	{
+
+	void Update() {
 		val = AudioAnalyzer.output[listenBand];
-		if (useThreshold && val > threshold)
-		{
+		if (useThreshold && val > threshold) {
 			trans.Rotate(axis, speed * val);
-		}
-		else
-		{
+		} else {
 			trans.Rotate(axis, speed * val);
 		}
 	}

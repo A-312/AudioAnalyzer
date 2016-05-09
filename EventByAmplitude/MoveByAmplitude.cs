@@ -1,10 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class MoveByAmplitude : MonoBehaviour 
-{
-	
-	
+public class MoveByAmplitude : MonoBehaviour {
 	[SerializeField]
 	[Range(0, 3)]
 	protected int listenBand;
@@ -15,17 +12,15 @@ public class MoveByAmplitude : MonoBehaviour
 
 	protected Vector3 origin;
 	protected Transform trans;
-	
+
 
 	#region Unity Methods
-	void Start ()
-	{
+	void Start() {
 		trans = transform;
 		origin = trans.position;
 	}
-	
-	void Update () 
-	{
+
+	void Update() {
 		trans.position = origin + (direction * AudioAnalyzer.output[listenBand] * amount);
 	}
 	#endregion
