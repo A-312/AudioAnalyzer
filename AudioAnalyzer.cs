@@ -40,7 +40,6 @@ public class AudioAnalyzer : MonoBehaviour {
 	//TODO: put this in another thread, see if it improves FPS on mac
 	#region Unity Methods
 	void Start() {
-
 		source = GetComponent<AudioSource>();
 
 		source.loop = true;
@@ -69,6 +68,13 @@ public class AudioAnalyzer : MonoBehaviour {
 	void Update() {
 		// main audio analysis
 		GetMultibandAmplitude();
+
+		if (useBakedAudio) {
+			if (clip != source.clip) {
+				source.clip = clip;
+				source.Play();
+			}
+		}
 
 		// select audio input device
 		if (Input.GetKeyDown(KeyCode.I)) {
