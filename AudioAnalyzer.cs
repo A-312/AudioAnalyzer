@@ -4,36 +4,14 @@ using System.Collections;
 [RequireComponent(typeof(AudioSource))]
 public class AudioAnalyzer : MonoBehaviour {
 
-	public const int BANDS = 4;
-	public static float[] output = new float[BANDS]; // averaged amplitude of freqData per band
-	public static float[] freqData = new float[sampleCount]; // raw output data of every analyzed sample: values between -1.0 to 1.0
-	public static float masterGain = 1f;
-
-
-	protected float mGain { get { return masterGain; } }
-	[SerializeField]
-	protected int[] crossovers = new int[BANDS] { 10, 80, 150, 300 }; // split the spectrum into bands at each crossover point 
-	[SerializeField]
-	protected float[] bandGain = new float[BANDS] { 250f, 2500f, 8000f, 15000f }; // multiply the amplitude of each band. higher frequencies require more boosting
-
-	[SerializeField]
-	protected bool easeAmplitude; // smooth amplitude changes vs. immediate change
-	[SerializeField]
-	[Range(0.001f, .1f)]
-	protected float climbRate;
-	[SerializeField]
-	[Range(0.001f, .1f)]
-	protected float fallRate;
-
 	[SerializeField]
 	protected bool listen, useBakedAudio;
-
-	protected SelectInputGUI micSelector;
+	
 	protected AudioSource source;
+
 	[SerializeField]
 	protected AudioClip clip;
-	protected float[] band = new float[BANDS]; // used for accumulating freqData
-	protected const int sampleCount = 512; // larger sample sizes will yield more "accurate" analysis at the cost of slower analysis
+	
 	protected string selectedDevice;
 	protected int minFreq, maxFreq;
 
@@ -66,9 +44,6 @@ public class AudioAnalyzer : MonoBehaviour {
 	}
 
 	void Update() {
-		// main audio analysis
-		GetMultibandAmplitude();
-
 		if (useBakedAudio) {
 			if (clip != source.clip) {
 				source.clip = clip;
@@ -76,28 +51,10 @@ public class AudioAnalyzer : MonoBehaviour {
 			}
 		}
 
-		// select audio input device
-		if (Input.GetKeyDown(KeyCode.I)) {
-			if (micSelector == null) {
-				micSelector = gameObject.AddComponent<SelectInputGUI>();
-				micSelector.SetCallback(SetInputDevice);
-			} else {
-				Destroy(micSelector);
-				micSelector = null;
-			}
-		}
-
 		if (source.mute == listen)
 			source.mute = !listen;
 	}
 	#endregion
-
-	#region API
-	public static float GetScaledOutput(int listenBand, float bandMax, float targetMin, float targetMax) {
-		return output[listenBand].Map(0, bandMax, targetMin, targetMax);
-	}
-	#endregion
-
 
 	#region audio buffer
 	protected void SetInputDevice(string device) {
@@ -159,53 +116,6 @@ public class AudioAnalyzer : MonoBehaviour {
 				yield return Microphone.GetPosition(selectedDevice);
 
 			source.Play();
-		}
-	}
-	#endregion
-
-
-	#region audio analysis
-	/// <summary>
-	/// GetAveragedVolume returns the average volume of the entire signal
-	/// </summary>
-	protected float GetAverageAmplitude() {
-		float[] data = new float[sampleCount];
-
-		float a = 0;
-		GetComponent<AudioSource>().GetSpectrumData(data, 0, FFTWindow.Hamming);
-
-		foreach (float s in data)
-			a += Mathf.Abs(s);
-
-		return a / sampleCount;
-	}
-
-	protected void GetMultibandAmplitude() {
-		source.GetSpectrumData(freqData, 0, FFTWindow.Hamming);
-
-		int k = 0;
-		float[] bandThresholds = new float[BANDS];
-		for (int i = 0; i < BANDS; i++) {
-			float min = (i > 0 ? crossovers[i - 1] : 0); // set the threshold for each band
-			bandThresholds[i] = crossovers[i] - min;
-			band[i] = 0f;
-		}
-
-		for (int i = 0; i < freqData.Length; i++) {
-			if (k > BANDS - 1)
-				break;
-
-			band[k] += freqData[i]; // sum amplitude of each frequency per band 
-
-			if (i > crossovers[k]) {
-				if (easeAmplitude) {
-					float bandAmp = Mathf.Abs(band[k] / bandThresholds[k]) * bandGain[k]; // divide total amplitude by total number of datapoints = average amplitdue for band
-					output[k] = Mathf.Lerp(output[k], bandAmp * masterGain, bandAmp * (bandAmp > output[k] ? climbRate : fallRate)); // if analyzed amplitude is larger than previous amplitude, ease to new amplitude at climbRate, otherwise ease at fallRate
-				} else
-					output[k] = Mathf.Abs(band[k] / bandThresholds[k]) * bandGain[k] * masterGain;
-
-				k++;
-			}
 		}
 	}
 	#endregion
